@@ -9,16 +9,13 @@ import br.com.alura.adopet.api.repository.AdocaoRepository;
 import br.com.alura.adopet.api.repository.PetRepository;
 import br.com.alura.adopet.api.repository.TutorRepository;
 import br.com.alura.adopet.api.validacoes.ValidacaoSolicitacaoAdocao;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,8 +35,12 @@ class AdocaoServiceTest {
     private TutorRepository tutorRepository;
     @Mock
     private EmailService emailService;
+    @Spy
+    private List<ValidacaoSolicitacaoAdocao> validacoes = new ArrayList<>();
     @Mock
-    private List<ValidacaoSolicitacaoAdocao> validacoes;
+    private ValidacaoSolicitacaoAdocao validador01;
+    @Mock
+    private ValidacaoSolicitacaoAdocao validador02;
     @Mock
     private Pet pet;
     @Mock
@@ -73,6 +74,28 @@ class AdocaoServiceTest {
         assertEquals(tutor,adocaoSalva.getTutor());
         assertEquals(dto.motivo(),adocaoSalva.getMotivo());
 
+    }
+
+    @Test
+    @DisplayName("Deveria chamar validadores quando solicitado")
+    void solicitarCenario02(){
+        //ARRANGE
+
+        this.dto = new SolicitacaoAdocaoDto(10l,20l,"Motivo aleatorio");
+        given(petRepository.getReferenceById(dto.idPet())).willReturn(pet);
+        given(tutorRepository.getReferenceById(dto.idTutor())).willReturn(tutor);
+        given(pet.getAbrigo()).willReturn(abrigo);
+        validacoes.add(validador01);
+        validacoes.add(validador02);
+
+        //ACT
+
+        adocaoService.solicitar(dto);
+
+        //ASSERT
+
+        then(validador01).should().validar(dto);
+        then(validador02).should().validar(dto);
     }
 
 
