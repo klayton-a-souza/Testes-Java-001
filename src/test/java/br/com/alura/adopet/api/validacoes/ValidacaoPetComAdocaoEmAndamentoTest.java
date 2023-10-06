@@ -28,7 +28,7 @@ class ValidacaoPetComAdocaoEmAndamentoTest {
     private StatusAdocao statusAdocao;
 
 
-    @DisplayName("Deveria verificar se esta adoção em andamento")
+    @DisplayName("Verificar se existe alguma adoção no banco de dados em andamento")
     @Test
     void cenario01(){
         //ARRANGE
@@ -39,5 +39,19 @@ class ValidacaoPetComAdocaoEmAndamentoTest {
         assertThrows(ValidacaoException.class,()-> validacao.validar(dto));
 
     }
+
+    @DisplayName("Quando não encontra uma adoção em andamento para esse pet")
+    @Test
+    void cenario02(){
+        //ARRANGE
+
+        given(adocaoRepository.existsByPetIdAndStatus(dto.idPet(),statusAdocao.AGUARDANDO_AVALIACAO)).willReturn(false);
+
+        //ASSERT + ACT
+        assertDoesNotThrow(() -> validacao.validar(dto));
+
+    }
+
+
 
 }
